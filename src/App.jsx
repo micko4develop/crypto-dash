@@ -1,6 +1,9 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import CoinCard from './components/CoinCard';
+import SearchInput from './components/SearchInput';
+import LimitSelector from './components/LimitSelector';
+import SortSelector from './components/SortSelector';
 const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
 
 function App() {
@@ -119,45 +122,21 @@ function App() {
       
       {/* Controls */}
       <div className="controls">
-        <div className="filter">
-          <input 
-            type="text" 
-            placeholder="Search coins..." 
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          />
-        </div>
+        <SearchInput 
+          filter={filter} 
+          onFilterChange={setFilter} 
+        />
         
         <div className="controls-row">
-          <div className="control-group">
-            <label htmlFor="limit">Show:</label>
-            <select 
-              id="limit" 
-              value={limit} 
-              onChange={(e) => setLimit(Number(e.target.value))}
-            >
-              <option value={10}>10</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-          </div>
+          <LimitSelector 
+            limit={limit} 
+            onLimitChange={setLimit} 
+          />
           
-          <div className="control-group">
-            <label htmlFor="sort">Sort by:</label>
-            <select 
-              id="sort" 
-              value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="market_cap_desc">Market Cap (High to Low)</option>
-              <option value="market_cap_asc">Market Cap (Low to High)</option>
-              <option value="price_desc">Price (High to Low)</option>
-              <option value="price_asc">Price (Low to High)</option>
-              <option value="volume_desc">Volume (High to Low)</option>
-              <option value="volume_asc">Volume (Low to High)</option>
-            </select>
-          </div>
+          <SortSelector 
+            sortBy={sortBy} 
+            onSortChange={setSortBy} 
+          />
         </div>
       </div>
 
