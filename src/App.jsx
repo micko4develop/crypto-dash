@@ -4,6 +4,7 @@ import CoinCard from './components/CoinCard';
 import SearchInput from './components/SearchInput';
 import LimitSelector from './components/LimitSelector';
 import SortSelector from './components/SortSelector';
+import Pagination from './components/Pagination';
 const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
 
 function App() {
@@ -13,6 +14,8 @@ function App() {
   const [limit, setLimit] = useState(100); // Uvećavam limit da učitam više podataka odjednom
   const [filter, setFilter] = useState('');
   const [sortBy, setSortBy] = useState('market_cap_desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   
   // Cache state
   const [cache, setCache] = useState({
@@ -98,9 +101,19 @@ function App() {
     // Zatim sortiraj
     const sorted = sortCoins(filtered, sortBy);
     
-    // Na kraju ograniči broj rezultata
-    return sorted.slice(0, limit);
+    return sorted; // Vrati sve filtrirane i sortirane podatke
   })();
+
+  // Pagination logic
+  const totalPages = Math.ceil(processedCoins.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedCoins = processedCoins.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filter or sort changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter, sortBy]);
 
   return (
     <div>
@@ -129,8 +142,8 @@ function App() {
         
         <div className="controls-row">
           <LimitSelector 
-            limit={limit} 
-            onLimitChange={setLimit} 
+            limit={itemsPerPage} 
+            onLimitChange={setItemsPerPage} 
           />
           
           <SortSelector 
@@ -145,11 +158,22 @@ function App() {
       { !loading && !error && (
         <main className='grid'>
           {
-            processedCoins.map((coin) => (
+            paginatedCoins.map((coin) => (
               <CoinCard key={coin.id} coin={coin} />
             ))
           }
         </main>
+      )}
+
+      {/* Pagination */}
+      {!loading && !error && processedCoins.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={processedCoins.length}
+          itemsPerPage={itemsPerPage}
+        />
       )}
     </div>
   )
