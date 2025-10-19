@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-const BASE_API_URL = 'https://api.coingecko.com/api/v3/coins/markets';
+import CoinCard from './components/CoinCard';
+const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
 
 function App() {
   const [coins, setCoins] = useState([]);
@@ -166,35 +167,7 @@ function App() {
         <main className='grid'>
           {
             processedCoins.map((coin) => (
-              <div className='coin-card' key={coin.id}>
-                <div className='coin-header'>
-                  <img src={coin.image} alt={coin.name} className='coin-image' />
-                  <div>
-                    <h3>{coin.name}</h3>
-                    <span className='symbol'>{coin.symbol.toUpperCase()}</span>
-                  </div>
-                </div>
-                <div className='coin-price'>
-                  <span className='price'>${coin.current_price.toLocaleString()}</span>
-                  <span className={`price-change ${coin.price_change_percentage_24h >= 0 ? 'positive' : 'negative'}`}>
-                    {coin.price_change_percentage_24h >= 0 ? '+' : ''}{coin.price_change_percentage_24h.toFixed(2)}%
-                  </span>
-                </div>
-                <div className='coin-stats'>
-                  <div className='stat'>
-                    <span className='stat-label'>Market Cap</span>
-                    <span className='stat-value'>${coin.market_cap.toLocaleString()}</span>
-                  </div>
-                  <div className='stat'>
-                    <span className='stat-label'>Volume 24h</span>
-                    <span className='stat-value'>${coin.total_volume.toLocaleString()}</span>
-                  </div>
-                  <div className='stat'>
-                    <span className='stat-label'>Rank</span>
-                    <span className='stat-value'>#{coin.market_cap_rank}</span>
-                  </div>
-                </div>
-              </div>
+              <CoinCard key={coin.id} coin={coin} />
             ))
           }
         </main>
