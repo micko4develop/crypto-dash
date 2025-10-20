@@ -347,6 +347,9 @@ a {
   justify-content: flex-end;
   gap: 1rem;
   margin-bottom: 1rem;
+  padding: 1rem;
+  background-color: #1c1f26;
+  border-radius: 8px;
 }
 
 .top-nav a {
@@ -354,10 +357,18 @@ a {
   text-decoration: none;
   font-weight: bold;
   transition: color 0.2s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
 }
 
 .top-nav a:hover {
   color: #4090db;
+  background-color: #2d3339;
+}
+
+.top-nav a.active {
+  color: #fff;
+  background-color: #58a6ff;
 }
 
 /* About Page */

@@ -1,10 +1,9 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import CoinCard from './components/CoinCard';
-import SearchInput from './components/SearchInput';
-import LimitSelector from './components/LimitSelector';
-import SortSelector from './components/SortSelector';
-import Pagination from './components/Pagination';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
+import HomePage from './pages/home';
+import AboutPage from './pages/about';
 
 const BASE_API_URL = 'https://api.coingecko.com/api/v3/coins/markets';
 
@@ -124,84 +123,42 @@ function App() {
   }, [itemsPerPage, totalPages, currentPage]);
 
   return (
-    <div>
-      <h1>🚀 Crypto Dashboard</h1>
-      
-      <div className="cache-status">
-        <span className={`cache-indicator ${isCacheValid() ? 'valid' : 'expired'}`}>
-          {isCacheValid() ? '📦 Cached data' : '🔄 Cache expired'}
-        </span>
-        <button 
-          className="refresh-btn" 
-          onClick={fetchCoinsFromAPI}
-          disabled={loading}
-        >
-          {loading ? 'Loading...' : '🔄 Refresh Data'}
-        </button>
-        <button 
-          className="refresh-btn" 
-          onClick={() => setCoins(fallbackCoins)}
-          style={{marginLeft: '10px'}}
-        >
-          🧪 Use Test Data
-        </button>
-        <button 
-          className="refresh-btn" 
-          onClick={() => {
-            setLoading(false);
-            setError(null);
-            setCoins(fallbackCoins);
-          }}
-          style={{marginLeft: '10px'}}
-        >
-          🔧 Force Display
-        </button>
-      </div>
-      <div className="controls">
-        <SearchInput 
-          filter={filter} 
-          onFilterChange={setFilter} 
-        />
-        
-        <div className="controls-row">
-          <LimitSelector 
-            limit={itemsPerPage} 
-            onLimitChange={setItemsPerPage} 
+    <Router>
+      <Layout>
+        <Routes>
+          <Route 
+            path="/" 
+            element={
+              <HomePage
+                coins={coins}
+                filter={filter}
+                setFilter={setFilter}
+                itemsPerPage={itemsPerPage}
+                setItemsPerPage={setItemsPerPage}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                loading={loading}
+                error={error}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                processedCoins={processedCoins}
+                paginatedCoins={paginatedCoins}
+                totalPages={totalPages}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                fetchCoinsFromAPI={fetchCoinsFromAPI}
+                fallbackCoins={fallbackCoins}
+                isCacheValid={isCacheValid}
+                setCoins={setCoins}
+                setLoading={setLoading}
+                setError={setError}
+              />
+            } 
           />
-          
-          <SortSelector 
-            sortBy={sortBy} 
-            onSortChange={setSortBy} 
-          />
-        </div>
-      </div>
-
-      { loading && <p>Loading...</p> }
-      { error && <div className='error'>{ error }</div> }
-      { !loading && !error && (
-        <main className='grid'>
-          {
-            paginatedCoins.length > 0 ? (
-              paginatedCoins.map((coin) => (
-                <CoinCard key={coin.id} coin={coin} />
-              ))
-            ) : (
-              <p>No coins to display</p>
-            )
-          }
-        </main>
-      )}
-
-      {!loading && !error && processedCoins.length > 0 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          totalItems={processedCoins.length}
-          itemsPerPage={itemsPerPage}
-        />
-      )}
-    </div>
+          <Route path="/about" element={<AboutPage />} />
+        </Routes>
+      </Layout>
+    </Router>
   )
 }
 
