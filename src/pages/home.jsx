@@ -39,7 +39,7 @@ function HomePage({
         >
           {loading ? 'Loading...' : '🔄 Refresh Data'}
         </button>
-        <button 
+        {/*<button 
           className="refresh-btn" 
           onClick={() => setCoins(fallbackCoins)}
           style={{marginLeft: '10px'}}
@@ -57,6 +57,7 @@ function HomePage({
         >
           🔧 Force Display
         </button>
+        */}
       </div>
       
       <div className="controls">
