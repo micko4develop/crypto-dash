@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const CoinCard = ({ coin }) => {
   const [imageError, setImageError] = useState(false);
@@ -8,7 +9,7 @@ const CoinCard = ({ coin }) => {
   };
 
   return (
-    <div className='coin-card' key={coin.id}>
+    <Link to={`/coin/${coin.id}`} className='coin-card' key={coin.id} style={{display:'block'}}>
       <div className='coin-header'>
         {imageError ? (
           <div className='coin-image-placeholder'>
@@ -58,7 +59,7 @@ const CoinCard = ({ coin }) => {
           </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 

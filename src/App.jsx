@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import HomePage from './pages/home';
 import AboutPage from './pages/about';
+import CoinDetails from './pages/coin-details';
+import NotFound from './pages/NotFound';
 
 const BASE_API_URL = 'https://api.coingecko.com/api/v3/coins/markets';
 
@@ -156,6 +158,8 @@ function App() {
             } 
           />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/coin/:id" element={<CoinDetails />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>
     </Router>
