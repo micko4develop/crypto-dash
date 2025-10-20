@@ -71,12 +71,14 @@ h1 {
 .pagination {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 1rem;
   margin-top: 2rem;
   padding: 1.5rem;
   background-color: #1c1f26;
   border-radius: 8px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .pagination-info {
@@ -88,6 +90,9 @@ h1 {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: nowrap;
+  justify-content: center;
+  width: 100%;
 }
 
 .pagination-btn {
@@ -99,6 +104,7 @@ h1 {
   cursor: pointer;
   font-weight: bold;
   transition: background-color 0.2s ease;
+  flex: 0 0 auto;
 }
 
 .pagination-btn:hover:not(:disabled) {
@@ -113,6 +119,13 @@ h1 {
 .pagination-numbers {
   display: flex;
   gap: 0.25rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  padding: 4px;
+  flex: 1 1 auto;
+  white-space: nowrap;
 }
 
 .pagination-number {
@@ -125,6 +138,7 @@ h1 {
   font-weight: bold;
   transition: background-color 0.2s ease;
   min-width: 40px;
+  flex: 0 0 auto;
 }
 
 .pagination-number:hover:not(:disabled) {
@@ -140,6 +154,27 @@ h1 {
   background-color: transparent;
   cursor: default;
   color: #666;
+}
+
+@media (max-width: 640px) {
+  .pagination {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .pagination-info {
+    text-align: center;
+    font-size: 0.8rem;
+  }
+
+  .pagination-btn {
+    padding: 0.4rem 0.6rem;
+  }
+
+  .pagination-number {
+    min-width: 36px;
+    padding: 0.4rem 0.6rem;
+  }
 }
 
 a {
