@@ -5,44 +5,40 @@ import SearchInput from './components/SearchInput';
 import LimitSelector from './components/LimitSelector';
 import SortSelector from './components/SortSelector';
 import Pagination from './components/Pagination';
-const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
+
+const BASE_API_URL = 'https://api.coingecko.com/api/v3/coins/markets';
 
 function App() {
   const [coins, setCoins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [limit, setLimit] = useState(100); // Uvećavam limit da učitam više podataka odjednom
   const [filter, setFilter] = useState('');
   const [sortBy, setSortBy] = useState('market_cap_desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
-  // Cache state
   const [cache, setCache] = useState({
     data: [],
     timestamp: null,
-    expiresIn: 60000 // 1 minut u milisekundama
+    expiresIn: 60000
   });
 
-  // Funkcija za provjeru da li je cache validan
   const isCacheValid = () => {
     if (!cache.timestamp || !cache.data.length) return false;
     return Date.now() - cache.timestamp < cache.expiresIn;
   };
-
-  // Funkcija za učitavanje podataka sa API-ja
   const fetchCoinsFromAPI = async () => {
     try {
       setLoading(true);
+      setError(null);
       const apiUrl = `${BASE_API_URL}?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false`;
       const res = await fetch(apiUrl);
+      
       if(!res.ok) {
-        throw new Error('Error to fetch data!');
+        throw new Error(`HTTP error! status: ${res.status}`);
       }
       const data = await res.json();
-      console.log('Fetched from API:', data);
       
-      // Sačuvaj u cache
       setCache({
         data: data,
         timestamp: Date.now(),
@@ -51,25 +47,27 @@ function App() {
       
       setCoins(data);
     } catch (err) {
+      console.error('API Error:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Učitaj podatke pri prvom renderovanju
   useEffect(() => {
     if (isCacheValid()) {
-      console.log('Using cached data');
       setCoins(cache.data);
       setLoading(false);
     } else {
-      console.log('Fetching fresh data from API');
       fetchCoinsFromAPI();
     }
-  }, []); // Prazan dependency array - pokreće se samo jednom
+  }, []);
+  const fallbackCoins = [
+    { id: 'bitcoin', name: 'Bitcoin', symbol: 'btc', current_price: 50000, market_cap: 1000000000, total_volume: 200000000 },
+    { id: 'ethereum', name: 'Ethereum', symbol: 'eth', current_price: 3000, market_cap: 400000000, total_volume: 150000000 },
+    { id: 'cardano', name: 'Cardano', symbol: 'ada', current_price: 0.5, market_cap: 20000000, total_volume: 10000000 }
+  ];
 
-  // Sort coins based on selected criteria
   const sortCoins = (coinsData, sortCriteria) => {
     const sortedCoins = [...coinsData];
     
@@ -91,35 +89,44 @@ function App() {
     }
   };
 
-  const processedCoins = (() => {
-    // Prvo filtriraj
-    const filtered = coins.filter(coin => 
+  const processedCoins = React.useMemo(() => {
+    const coinsToUse = coins.length > 0 ? coins : fallbackCoins;
+    
+    const filtered = coinsToUse.filter(coin => 
       coin.name.toLowerCase().includes(filter.toLowerCase()) ||
       coin.symbol.toLowerCase().includes(filter.toLowerCase())
     );
     
-    // Zatim sortiraj
     const sorted = sortCoins(filtered, sortBy);
     
-    return sorted; // Vrati sve filtrirane i sortirane podatke
-  })();
+    return sorted;
+  }, [coins, filter, sortBy]);
 
-  // Pagination logic
-  const totalPages = Math.ceil(processedCoins.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedCoins = processedCoins.slice(startIndex, endIndex);
+  const paginationData = React.useMemo(() => {
+    const totalPages = Math.ceil(processedCoins.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedCoins = processedCoins.slice(startIndex, endIndex);
+    
+    return { totalPages, startIndex, endIndex, paginatedCoins };
+  }, [processedCoins, currentPage, itemsPerPage]);
+  
+  const { totalPages, startIndex, endIndex, paginatedCoins } = paginationData;
 
-  // Reset to page 1 when filter or sort changes
   useEffect(() => {
     setCurrentPage(1);
   }, [filter, sortBy]);
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [itemsPerPage, totalPages, currentPage]);
 
   return (
     <div>
       <h1>🚀 Crypto Dashboard</h1>
       
-      {/* Cache Status */}
       <div className="cache-status">
         <span className={`cache-indicator ${isCacheValid() ? 'valid' : 'expired'}`}>
           {isCacheValid() ? '📦 Cached data' : '🔄 Cache expired'}
@@ -131,9 +138,25 @@ function App() {
         >
           {loading ? 'Loading...' : '🔄 Refresh Data'}
         </button>
+        <button 
+          className="refresh-btn" 
+          onClick={() => setCoins(fallbackCoins)}
+          style={{marginLeft: '10px'}}
+        >
+          🧪 Use Test Data
+        </button>
+        <button 
+          className="refresh-btn" 
+          onClick={() => {
+            setLoading(false);
+            setError(null);
+            setCoins(fallbackCoins);
+          }}
+          style={{marginLeft: '10px'}}
+        >
+          🔧 Force Display
+        </button>
       </div>
-      
-      {/* Controls */}
       <div className="controls">
         <SearchInput 
           filter={filter} 
@@ -158,14 +181,17 @@ function App() {
       { !loading && !error && (
         <main className='grid'>
           {
-            paginatedCoins.map((coin) => (
-              <CoinCard key={coin.id} coin={coin} />
-            ))
+            paginatedCoins.length > 0 ? (
+              paginatedCoins.map((coin) => (
+                <CoinCard key={coin.id} coin={coin} />
+              ))
+            ) : (
+              <p>No coins to display</p>
+            )
           }
         </main>
       )}
 
-      {/* Pagination */}
       {!loading && !error && processedCoins.length > 0 && (
         <Pagination
           currentPage={currentPage}
